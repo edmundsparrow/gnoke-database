@@ -1,71 +1,197 @@
-# Gnoke-Database: Firebase in your pocket.
+# Gnoke Engine — Developer Guide
 
-Every indie developer knows the moment.
-
-You build something real. People start using it. Then you open your Firebase console and see the bill growing — and you realise you don't own any of it. Your users' data lives on someone else's machine. Your app's survival depends on a pricing page you didn't write.
-
-I built the exit door.
+> One file to edit on the server. One file to edit on the client. Everything else is frozen.
 
 ---
 
-**What Gnoke-Database is:**
+## What is this?
 
-It is a complete backend engine — collections, auth, offline sync, roles, identity isolation, OTP recovery — that runs on any PHP host with SQLite.
-
-Not a cloud service. Not a monthly subscription. A folder you upload once.
-
-The cheapest shared host you can find. The one that costs less than your data bill. That host is now your Firebase.
+Gnoke is a lightweight sync engine — think Firebase, but it's just PHP + SQLite files you own and deploy yourself. Each deployment is for **one company**. Staff devices write data locally first, then sync to the cloud in the background.
 
 ---
 
-**What it actually does:**
+## Folder layout
 
-Your app saves records locally first. Always. No network required. When the connection returns, Gnoke pushes the queue silently. When a teammate makes a change on their device, Gnoke pulls it down. Your UI reacts. Nobody waited. Nobody lost data.
+```
+your-project/
+├── index.html          ← login page
+├── app.html            ← your app (after login)
+├── gnoke-config.js     ← ✏️  edit this (client config)
+├── gnoke-store.js      ← frozen
+├── gnoke-sync.js       ← frozen
+├── gnoke-pull.js       ← frozen
+├── gnoke-secure.js     ← frozen
+└── api/
+    ├── gnoke-config.php  ← ✏️  edit this (server config)
+    ├── index.php         ← frozen (API router)
+    └── gnoke/            ← frozen (core engine files)
+```
 
-This is not a workaround. This is how it should have worked from the beginning.
-
-Collections are scoped automatically — per user, per branch, per company — without you writing a single access rule by hand. The identity chain handles it. Same user, different app: separate data. Same app, different branch: separate data. No accidental bleed. Ever.
-
-Roles are defined once in a config file and enforced on every request. Operators save and sync. Managers delete. Admins touch everything. You write the rule once. Gnoke enforces it everywhere.
-
-Staff changes device. Forgets PIN. OTP recovery re-establishes the chain in under a minute. No data lost. No admin panic.
-
----
-
-**The number that matters:**
-
-Firebase charges by reads, writes, and storage — and the meter runs whether you're watching or not.
-
-Gnoke-Database runs on SQLite. One file on your server. The bill is your hosting fee. Fixed. Predictable. Yours.
-
-One deployment serves your entire company. Multi-tenant mode gives every client their own isolated database file — same server, zero bleed, independent backups.
+**Rule:** You only ever edit the two config files. Everything else is engine internals.
 
 ---
 
-**What this is not:**
+## How to deploy a new project
 
-This is not a Firebase killer for Google-scale infrastructure. If you are serving 50 million concurrent users across five continents, you have different problems.
-
-This is for the courier startup in Lagos. The school management system in Accra. The inventory app a developer built for a family business. The SaaS that doesn't need a San Francisco budget to survive.
-
-Most apps are over-engineered by default — hosted on infrastructure designed for companies a hundred times their size, paying for headroom they will never use.
-
-Gnoke-Database is the right size. Deployable in an afternoon. Owned completely.
+1. Copy the whole project folder.
+2. Open `api/gnoke-config.php` — set `DB_PATH`, `ADMIN_SECRET`, and your `ROLES`.
+3. Open `gnoke-config.js` — set `GNOKE_ENDPOINT` to your server URL.
+4. Define your collections (see Collections below).
+5. Upload. Done.
 
 ---
 
-**The philosophy in one line:**
+## The two config files
 
-Your backend should live on your terms — not on a pricing page you didn't write.
+### `gnoke-config.php` (server)
+
+| Setting | What it does |
+|---|---|
+| `DB_PATH` | Where the SQLite database file lives. Keep it outside the web root. |
+| `ADMIN_SECRET` | Password for admin-only actions (generate OTP, revoke token). Never put this in frontend code. |
+| `MASTER_COLLECTIONS` | Collections the server owns. Devices get a hard copy on every pull. |
+| `OTP_TTL` | How long a restore OTP stays valid (seconds). Default: 900 = 15 min. |
+| `BATCH_LIMIT` | Max records per sync request. Default: 500. |
+| `ROLES` | Who can do what. Leave empty to allow everything. |
+
+### `gnoke-config.js` (client)
+
+| Setting | What it does |
+|---|---|
+| `GNOKE_ENDPOINT` | Full URL to `api/index.php` on your server. |
+| `GnokeStore.configure()` | Sets the endpoint and workspace. Called once on page load. |
+| `GnokeStore.define()` | Registers a collection before you can read or write it. |
 
 ---
 
-*Gnoke-Database — MIT License. Your own Firebase, on your own server.*
+## Collections
 
-https://github.com/edmundsparrow/gnoke-database
+A collection is like a database table. You define it once in `gnoke-config.js`:
 
-#GnokeDatabase #LocalFirst #Firebase #IndieHacker #SovereignTech #VibeEngineering
+```js
+GnokeStore.define('invoices', { scope: 'workspace' });
+```
 
-Your own Firebase. Self-hosted, offline-first, zero dependencies.
+| Scope | Who sees the data |
+|---|---|
+| `'user'` | Only the logged-in user on this device |
+| `'workspace'` | Everyone in the same branch / group |
+| `'company'` | Everyone in the whole deployment |
 
-if i can breathe i can think if i can think i can win
+---
+
+## How login works
+
+1. Staff enter phone/email + PIN.
+2. The browser hashes `identifier + PIN` into a `device_id` (SHA-256, no PIN sent to server).
+3. Server looks up the profile, returns a **token**.
+4. Token is saved to `localStorage`. Every future sync request carries it.
+5. On next page load, the token is found and login is skipped automatically.
+
+To log out: call `GNOKE_SECURE.signOut()` — clears token, goes back to `index.html`.
+
+**Inactivity logout is the app's responsibility.** Gnoke validates the session on every page load but does not run an inactivity timer while the page is open. If you want to automatically sign out idle users, set a timer in your `app.html` and call `GNOKE_SECURE.signOut()` when it fires:
+
+```js
+// Example: sign out after 30 minutes of no interaction
+let idleTimer;
+const IDLE_MS = 30 * 60 * 1000; // adjust to suit your app
+
+function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(() => GNOKE_SECURE.signOut(), IDLE_MS); }
+['click','keydown','touchstart','scroll'].forEach(e => document.addEventListener(e, resetIdle));
+resetIdle(); // start the timer on page load
+```
+
+Choose your timeout based on sensitivity: 5–10 min for finance, 30 min for general staff tools, longer for shift-based apps where a device stays open all day.
+
+---
+
+## How sync works
+
+```
+Staff device                    Server (api/index.php)
+──────────────────              ──────────────────────
+Write locally (instant)
+       │
+  every 30s ──── push ────────► saves to cloud DB
+       │
+  every 5min ◄─── pull ─────── returns updates
+       │
+GnokeStore.merge()
+(UI re-renders via onChange)
+```
+
+- **Push** (`dispatch`): queued events are sent in batches. Works offline — retries until connected.
+- **Pull** (`get`): fetches records changed since last sync using a timestamp cursor.
+- **Master pull** (`updates`): hard-overwrites local copy for read-only server lists (e.g. product catalogue).
+
+---
+
+## Reading and writing data
+
+```js
+// Write
+const id = GnokeStore.save('invoices', { amount: 5000, status: 'pending' });
+
+// Read
+const all    = GnokeStore.query('invoices');
+const open   = GnokeStore.query('invoices', r => r.status === 'pending');
+const single = GnokeStore.getOne('invoices', id);
+
+// Update
+GnokeStore.update('invoices', id, { status: 'paid' });
+
+// Delete (soft — syncs deletion to server)
+GnokeStore.remove('invoices', id);
+
+// React to changes (fires on every local write + server pull)
+GnokeStore.onChange('invoices', records => renderTable(records));
+```
+
+---
+
+## Account restore (lost device / forgotten PIN)
+
+1. Admin calls `?action=generate-otp` with `admin_secret` + `user_id` → gets an 8-character OTP.
+2. Admin sends OTP to the staff member (WhatsApp, SMS, etc.).
+3. Staff enters phone/email + OTP + new PIN on the Restore screen.
+4. Server issues a new token. Old device tokens still work until explicitly revoked.
+
+---
+
+## Roles (optional)
+
+Define in `gnoke-config.php`:
+
+```php
+define('ROLES', [
+    'operator' => ['save', 'get', 'dispatch', 'updates'],
+    'admin'    => ['*'],
+]);
+```
+
+Role is set on the profile when a user registers. `'*'` means full access. Leave `ROLES` as `[]` to skip role checks entirely.
+
+---
+
+## Common errors
+
+| Error | Cause | Fix |
+|---|---|---|
+| `GnokeStore not loaded` | Script order wrong | Load `gnoke-store.js` before `gnoke-config.js` |
+| `collection not defined` | Forgot `GnokeStore.define()` | Add it to `gnoke-config.js` |
+| `workspace_id is not set` | Login didn't complete before a write | Write only after login resolves |
+| `Invalid or revoked token` | Token expired or wiped | User needs to sign in again |
+| `Bad admin secret` | Wrong `ADMIN_SECRET` | Check `gnoke-config.php` |
+| `Cannot create database directory` | Server folder permissions | `chmod 750` the `gnoke-data/` folder |
+
+---
+
+## Reusing for a new client
+
+1. Copy the entire project folder.
+2. Edit `api/gnoke-config.php` — new `DB_PATH` (different filename), new `ADMIN_SECRET`.
+3. Edit `gnoke-config.js` — new `GNOKE_ENDPOINT`.
+4. Deploy.
+
+Each client is a completely separate SQLite file. They share no data.
