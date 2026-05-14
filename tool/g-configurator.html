@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G·Configurator — Gnoke Engine Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #f4f5f7;
+    --surface:    #ffffff;
+    --surface-2:  #f8f9fb;
+    --surface-3:  #eef0f4;
+    --border:     rgba(0,0,0,0.08);
+    --border-2:   rgba(0,0,0,0.13);
+    --fg:         #111318;
+    --muted:      #6b7280;
+    --muted-2:    #9ca3af;
+    --accent:     #dc2626;
+    --accent-h:   #b91c1c;
+    --accent-dim: rgba(220,38,38,0.08);
+    --accent-glow:rgba(220,38,38,0.18);
+    --green:      #16a34a;
+    --green-dim:  rgba(22,163,74,0.1);
+    --blue:       #2563eb;
+    --blue-dim:   rgba(37,99,235,0.1);
+    --mono:       'IBM Plex Mono', monospace;
+    --display:    'Syne', sans-serif;
+    --body:       'DM Sans', sans-serif;
+    --radius:     10px;
+    --radius-sm:  6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--body);
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .logo-mark svg { display: block; }
+  header h1 {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  header h1 span { color: var(--accent); }
+  .header-tag {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Layout ── */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: calc(100vh - 61px);
+  }
+  @media (max-width: 900px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  /* ── Panels ── */
+  .panel {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  .panel:last-child { border-right: none; }
+
+  .panel-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface);
+    position: sticky;
+    top: 61px;
+    z-index: 10;
+  }
+  .panel-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-js  { background: #b45309; }
+  .dot-php { background: #7c3aed; }
+
+  .panel-header h2 {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--fg);
+  }
+  .panel-header .file-label {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .panel-body {
+    padding: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  /* ── Form elements ── */
+  .field { margin-bottom: 1.125rem; }
+  .field label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .field input, .field select {
+    width: 100%;
+    height: 2.5rem;
+    padding: 0 0.875rem;
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    color: var(--fg);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .field input::placeholder { color: var(--muted-2); }
+
+  select option { background: var(--surface-3); }
+
+  .hint {
+    margin-top: 0.35rem;
+    font-size: 0.7rem;
+    color: var(--muted-2);
+    line-height: 1.4;
+  }
+
+  /* ── Section divider ── */
+  .section-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted-2);
+    margin: 1.5rem 0 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Collection rows ── */
+  .rows-container { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .row-item {
+    display: grid;
+    grid-template-columns: 1fr 130px 28px;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .row-item input, .row-item select {
+    height: 2.25rem;
+    font-size: 0.8rem;
+  }
+  .btn-remove {
+    width: 28px; height: 28px;
+    background: transparent;
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+  .btn-remove:hover { background: rgba(220,38,38,0.15); border-color: var(--accent); color: var(--accent); }
+
+  /* ── Role rows ── */
+  .role-row {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .role-row-top {
+    display: grid;
+    grid-template-columns: 1fr 28px;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .role-row-top input {
+    height: 2.25rem;
+    font-size: 0.8rem;
+  }
+  .perm-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .perm-chip {
+    display: flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-2);
+    background: var(--surface-3);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.12s;
+  }
+  .perm-chip input { display: none; }
+  .perm-chip.checked {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent-h);
+  }
+  .perm-chip.checked-all {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* ── Add button ── */
+  .btn-add {
+    width: 100%;
+    height: 2.25rem;
+    margin-top: 0.5rem;
+    background: transparent;
+    border: 1px dashed var(--border-2);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--body);
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  }
+  .btn-add:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* ── Preview / output area ── */
+  .output-wrap {
+    margin-top: 1.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--surface-3);
+    border-bottom: 1px solid var(--border);
+  }
+  .output-header span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .btn-copy {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: 4px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-copy:hover { color: var(--fg); border-color: var(--fg); }
+  .btn-copy.copied { color: var(--green); border-color: var(--green); }
+
+  pre {
+    padding: 1rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    line-height: 1.65;
+    color: #374151;
+    background: var(--surface-3);
+    overflow-x: auto;
+    max-height: 260px;
+    white-space: pre;
+  }
+
+  /* token colours — light theme */
+  .t-comment { color: #9ca3af; }
+  .t-key     { color: #b45309; }
+  .t-str     { color: #16a34a; }
+  .t-kw      { color: #7c3aed; }
+  .t-fn      { color: #2563eb; }
+  .t-num     { color: #dc2626; }
+
+  /* ── Download button ── */
+  .btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 2.75rem;
+    margin-top: 1rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-family: var(--body);
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .btn-download-js  { background: rgba(180,83,9,0.08); color: #b45309; border: 1px solid rgba(180,83,9,0.25); }
+  .btn-download-php { background: rgba(109,40,217,0.08); color: #7c3aed; border: 1px solid rgba(109,40,217,0.25); }
+  .btn-download-js:hover  { background: rgba(180,83,9,0.15); }
+  .btn-download-php:hover { background: rgba(109,40,217,0.15); }
+
+  /* ── Footer ── */
+  .panel-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.6875rem;
+    color: var(--muted-2);
+    font-family: var(--mono);
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="2" width="5" height="5" rx="1.5" fill="white"/>
+      <rect x="9" y="9" width="5" height="5" rx="1.5" fill="white"/>
+      <rect x="9" y="2" width="5" height="5" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+    </svg>
+  </div>
+  <h1>G·<span>Configurator</span></h1>
+  <span class="header-tag">Gnoke Engine · Config Generator</span>
+</header>
+
+<div class="workspace">
+
+  <!-- ══════════════════════════════════════════
+       LEFT — gnoke-config.js
+  ═══════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-dot dot-js"></span>
+      <h2>Frontend Config</h2>
+      <span class="file-label">gnoke-config.js → htdocs/</span>
+    </div>
+    <div class="panel-body">
+
+      <div class="field">
+        <label>API Endpoint URL</label>
+        <input type="url" id="js-endpoint" placeholder="https://yourdomain.com/api/index.php" oninput="render()">
+        <p class="hint">Full URL to <code>api/index.php</code> on your server.</p>
+      </div>
+
+      <div class="field">
+        <label>Registration Secret</label>
+        <input type="text" id="js-regsecret" placeholder="e.g. LAUNCH2026" oninput="render()">
+        <p class="hint">Auth code staff enter to self-register. Change before deploying.</p>
+      </div>
+
+      <div class="section-title">Collections</div>
+
+      <div class="rows-container" id="collections-list"></div>
+      <button class="btn-add" onclick="addCollection()">＋ Add Collection</button>
+
+      <div class="output-wrap">
+        <div class="output-header">
+          <span>gnoke-config.js preview</span>
+          <button class="btn-copy" id="copy-js" onclick="copyOutput('js-output','copy-js')">copy</button>
+        </div>
+        <pre id="js-output"></pre>
+      </div>
+
+      <button class="btn-download btn-download-js" onclick="download('js')">
+        ↓ Download gnoke-config.js
+      </button>
+    </div>
+    <div class="panel-footer">Drop into: htdocs/ (same level as index.html)</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       RIGHT — gnoke-config.php
+  ═══════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-dot dot-php"></span>
+      <h2>Backend Config</h2>
+      <span class="file-label">gnoke-config.php → htdocs/api/</span>
+    </div>
+    <div class="panel-body">
+
+      <div class="field">
+        <label>Admin Secret</label>
+        <input type="text" id="php-adminsecret" placeholder="e.g. ADMIN_S3CR3T_KEY" oninput="render()">
+        <p class="hint">Protects OTP generation and token revocation. Never expose in frontend.</p>
+      </div>
+
+      <div class="field">
+        <label>Database Path (DB_PATH)</label>
+        <input type="text" id="php-dbpath" placeholder="__DIR__ . '/gnoke-data/gnoke.db'" oninput="render()">
+        <p class="hint">Leave blank for default. Move outside web root for production.</p>
+      </div>
+
+      <div class="field">
+        <label>OTP TTL (seconds)</label>
+        <input type="number" id="php-otpttl" value="900" min="60" max="86400" oninput="render()">
+        <p class="hint">How long a restore OTP stays valid. Default: 900 (15 min).</p>
+      </div>
+
+      <div class="field">
+        <label>Batch Limit</label>
+        <input type="number" id="php-batchlimit" value="500" min="10" max="5000" oninput="render()">
+        <p class="hint">Max records per sync request. Default: 500.</p>
+      </div>
+
+      <div class="section-title">Master Collections</div>
+      <div class="rows-container" id="master-list"></div>
+      <button class="btn-add" onclick="addMaster()">＋ Add Master Collection</button>
+
+      <div class="section-title">Roles</div>
+      <div id="roles-list"></div>
+      <button class="btn-add" onclick="addRole()">＋ Add Role</button>
+
+      <div class="output-wrap">
+        <div class="output-header">
+          <span>gnoke-config.php preview</span>
+          <button class="btn-copy" id="copy-php" onclick="copyOutput('php-output','copy-php')">copy</button>
+        </div>
+        <pre id="php-output"></pre>
+      </div>
+
+      <button class="btn-download btn-download-php" onclick="download('php')">
+        ↓ Download gnoke-config.php
+      </button>
+    </div>
+    <div class="panel-footer">Drop into: htdocs/api/ (replace existing file)</div>
+  </div>
+
+</div>
+
+<script>
+/* ── State ── */
+let collections = [
+  { name: 'messages',   scope: 'workspace' },
+  { name: 'deliveries', scope: 'user' },
+];
+let masters = [];
+let roles = [
+  { name: 'operator', perms: ['save','get','dispatch','updates'] },
+  { name: 'admin',    perms: ['*'] },
+];
+
+const ALL_PERMS = ['save','get','dispatch','updates','delete','*'];
+
+/* ── Render form rows ── */
+function renderCollectionRows() {
+  const el = document.getElementById('collections-list');
+  el.innerHTML = collections.map((c, i) => `
+    <div class="row-item">
+      <input type="text" value="${esc(c.name)}" placeholder="collection_name"
+             oninput="collections[${i}].name=this.value;render()" />
+      <select onchange="collections[${i}].scope=this.value;render()">
+        ${['user','workspace','company'].map(s =>
+          `<option value="${s}"${c.scope===s?' selected':''}>${s}</option>`
+        ).join('')}
+      </select>
+      <button class="btn-remove" onclick="collections.splice(${i},1);renderCollectionRows();render()">×</button>
+    </div>`).join('');
+}
+
+function renderMasterRows() {
+  const el = document.getElementById('master-list');
+  el.innerHTML = masters.map((m, i) => `
+    <div class="row-item">
+      <input type="text" value="${esc(m)}" placeholder="collection_name" style="grid-column:1/3"
+             oninput="masters[${i}]=this.value;render()" />
+      <button class="btn-remove" onclick="masters.splice(${i},1);renderMasterRows();render()">×</button>
+    </div>`).join('');
+}
+
+function renderRoleRows() {
+  const el = document.getElementById('roles-list');
+  el.innerHTML = roles.map((r, i) => `
+    <div class="role-row">
+      <div class="role-row-top">
+        <input type="text" value="${esc(r.name)}" placeholder="role_name"
+               oninput="roles[${i}].name=this.value;render()" />
+        <button class="btn-remove" onclick="roles.splice(${i},1);renderRoleRows();render()">×</button>
+      </div>
+      <div class="perm-chips">
+        ${ALL_PERMS.map(p => {
+          const on = r.perms.includes(p);
+          const cls = p==='*'&&on ? 'perm-chip checked-all' : on ? 'perm-chip checked' : 'perm-chip';
+          return `<label class="${cls}" onclick="togglePerm(${i},'${p}')"><input type="checkbox"${on?' checked':''}>${p}</label>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function togglePerm(i, p) {
+  const r = roles[i];
+  if (p === '*') {
+    r.perms = r.perms.includes('*') ? [] : ['*'];
+  } else {
+    r.perms = r.perms.includes('*') ? [p] : r.perms.includes(p) ? r.perms.filter(x=>x!==p) : [...r.perms, p];
+  }
+  renderRoleRows(); render();
+}
+
+function addCollection() { collections.push({ name:'', scope:'workspace' }); renderCollectionRows(); render(); }
+function addMaster()     { masters.push(''); renderMasterRows(); render(); }
+function addRole()       { roles.push({ name:'', perms:[] }); renderRoleRows(); render(); }
+
+/* ── Generate gnoke-config.js ── */
+function buildJS() {
+  const endpoint  = document.getElementById('js-endpoint').value.trim()  || 'https://yourdomain.com/api/index.php';
+  const regsecret = document.getElementById('js-regsecret').value.trim() || 'CHANGEME';
+  const cols = collections.filter(c => c.name.trim());
+
+  let out = '';
+  out += `/* ──────────────────────────────────────────────────────\n`;
+  out += `   gnoke-config.js\n`;
+  out += `   The only JS file you edit per project.\n`;
+  out += `   Safe to load on index.html (login page) alone.\n`;
+  out += `   Load AFTER gnoke-store.js and gnoke-sync.js on app pages.\n`;
+  out += `   ────────────────────────────────────────────────────── */\n\n`;
+  out += `// ── 1. Point to your API ─────────────────────────────\n`;
+  out += `const GNOKE_ENDPOINT = '${endpoint}';\n\n`;
+  out += `// ── 2. Staff self-registration auth code ─────────────\n`;
+  out += `const GNOKE_REG_SECRET = '${regsecret}';\n\n`;
+  out += `// ── 3 & 4 only run when the full engine is loaded ────\n`;
+  out += `if (window.GnokeStore) {\n\n`;
+  out += `  // ── 3. Configure identity ──────────────────────────\n`;
+  out += `  GnokeStore.configure({\n`;
+  out += `    endpoint     : GNOKE_ENDPOINT,\n`;
+  out += `    company_id   : 'default',   // placeholder — reserved for gnoke-router\n`;
+  out += `    app_id       : 'app',       // placeholder — reserved for gnoke-router\n`;
+  out += `    workspace_id : '',          // filled in after login\n`;
+  out += `    user_id      : '',          // filled in after login\n`;
+  out += `  });\n\n`;
+  if (cols.length) {
+    out += `  // ── 4. Register collections ────────────────────────\n`;
+    cols.forEach(c => {
+      out += `  GnokeStore.define('${c.name}', { scope: '${c.scope}' });\n`;
+    });
+    out += '\n';
+  }
+  out += `}\n`;
+  return out;
+}
+
+/* ── Generate gnoke-config.php ── */
+function buildPHP() {
+  const admin   = document.getElementById('php-adminsecret').value.trim() || 'CHANGE_THIS_SECRET';
+  const rawPath = document.getElementById('php-dbpath').value.trim();
+  const dbpath  = rawPath || `__DIR__ . '/gnoke-data/gnoke.db'`;
+  const ttl     = document.getElementById('php-otpttl').value    || '900';
+  const batch   = document.getElementById('php-batchlimit').value || '500';
+
+  const masterCols = masters.filter(m => m.trim());
+  const validRoles = roles.filter(r => r.name.trim());
+
+  let out = '';
+  out += `<?php\n`;
+  out += `/* ──────────────────────────────────────────────────────\n`;
+  out += `   gnoke-config.php\n`;
+  out += `   The only PHP file you edit per project.\n`;
+  out += `   ────────────────────────────────────────────────────── */\n\n`;
+
+  out += `// ── 1. Database ──────────────────────────────────────\n`;
+  const isExpr = dbpath.startsWith('__DIR__') || dbpath.startsWith('dirname');
+  out += `define('DB_PATH', ${isExpr ? dbpath : `'${dbpath}'`});\n\n`;
+
+  out += `// ── 2. Admin secret ──────────────────────────────────\n`;
+  out += `define('ADMIN_SECRET', '${admin}');\n\n`;
+
+  out += `// ── 3. OTP & batch settings ──────────────────────────\n`;
+  out += `define('OTP_TTL',     ${ttl});   // seconds\n`;
+  out += `define('BATCH_LIMIT', ${batch});\n\n`;
+
+  out += `// ── 4. Master collections (server-owned, read-only) ──\n`;
+  if (masterCols.length) {
+    out += `define('MASTER_COLLECTIONS', [\n`;
+    masterCols.forEach(m => { out += `    '${m}',\n`; });
+    out += `]);\n\n`;
+  } else {
+    out += `define('MASTER_COLLECTIONS', []);\n\n`;
+  }
+
+  out += `// ── 5. Roles ─────────────────────────────────────────\n`;
+  if (validRoles.length) {
+    out += `define('ROLES', [\n`;
+    validRoles.forEach(r => {
+      const perms = r.perms.includes('*')
+        ? `['*']`
+        : `['${r.perms.join("', '")}']`;
+      out += `    '${r.name}' => ${perms},\n`;
+    });
+    out += `]);\n`;
+  } else {
+    out += `define('ROLES', []);  // empty = no role checks\n`;
+  }
+  return out;
+}
+
+/* ── Syntax-highlight for preview ── */
+function highlight(code, type) {
+  const e = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (type === 'js') {
+    return e(code)
+      .replace(/(\/\*[\s\S]*?\*\/|\/\/[^\n]*)/g, '<span class="t-comment">$1</span>')
+      .replace(/\b(const|if|window)\b/g, '<span class="t-kw">$1</span>')
+      .replace(/\b(GnokeStore\.(configure|define|call))/g, '<span class="t-fn">GnokeStore</span>.$2')
+      .replace(/'([^']*)'/g, '<span class="t-str">\'$1\'</span>');
+  } else {
+    return e(code)
+      .replace(/(\/\*[\s\S]*?\*\/|\/\/[^\n]*)/g, '<span class="t-comment">$1</span>')
+      .replace(/\b(define|true|false|null)\b/g, '<span class="t-kw">$1</span>')
+      .replace(/'([^']*)'/g, '<span class="t-str">\'$1\'</span>')
+      .replace(/\b(\d+)\b/g, '<span class="t-num">$1</span>');
+  }
+}
+
+function render() {
+  const jsCode  = buildJS();
+  const phpCode = buildPHP();
+  document.getElementById('js-output').innerHTML  = highlight(jsCode,  'js');
+  document.getElementById('php-output').innerHTML = highlight(phpCode, 'php');
+}
+
+/* ── Download ── */
+function download(type) {
+  const content  = type === 'js' ? buildJS() : buildPHP();
+  const filename = type === 'js' ? 'gnoke-config.js' : 'gnoke-config.php';
+  const mime     = type === 'js' ? 'text/javascript' : 'text/x-php';
+  const blob = new Blob([content], { type: mime });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ── Copy ── */
+function copyOutput(srcId, btnId) {
+  const text = document.getElementById(srcId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = 'copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function esc(s) { return String(s||'').replace(/"/g,'&quot;'); }
+
+/* ── Boot ── */
+renderCollectionRows();
+renderMasterRows();
+renderRoleRows();
+render();
+</script>
+</body>
+</html>
