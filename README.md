@@ -152,10 +152,34 @@ GnokeStore.onChange('invoices', records => renderTable(records));
 
 ## Account restore (lost device / forgotten PIN)
 
-1. Admin calls `?action=generate-otp` with `admin_secret` + `user_id` → gets an 8-character OTP.
-2. Admin sends OTP to the staff member (WhatsApp, SMS, etc.).
-3. Staff enters phone/email + OTP + new PIN on the Restore screen.
-4. Server issues a new token. Old device tokens still work until explicitly revoked.
+**What the engine provides:**
+- `index.html` already includes the staff-facing **Restore screen** — staff enter their identifier, OTP, and new PIN. Nothing to build there.
+- You are responsible for building the **admin generator tab** inside your `app.html` — a simple form that lets an admin pick a staff member, call the API, and read back the OTP to send on.
+
+**The flow:**
+
+1. Admin selects a staff member in your app and triggers OTP generation.
+2. Your app calls `?action=generate-otp` — engine returns an 8-character code valid for 15 minutes.
+3. Admin sends the OTP to staff (WhatsApp, SMS, etc.).
+4. Staff opens `index.html`, selects Restore, enters identifier + OTP + new PIN.
+5. Server issues a new token tied to the new device. Old device tokens still work until explicitly revoked.
+
+**Admin generator — example call:**
+
+```js
+const res = await fetch(GNOKE_ENDPOINT + '?action=generate-otp', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    admin_secret : 'your-admin-secret',  // from gnoke-config.php
+    user_id      : 'staff-user-id'       // the user to restore
+  })
+});
+const { otp } = await res.json();
+// Display otp to admin — expires in OTP_TTL seconds (default 15 min)
+```
+
+> **Note:** `admin_secret` is server-side only. Never expose it in frontend code outside a role-protected admin view.
 
 ---
 
