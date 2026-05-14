@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello · Gnoke</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:           #f0f4f9;
+      --surface:      #ffffff;
+      --surface-2:    #e8eef6;
+      --border:       rgba(30,64,120,0.1);
+      --fg:           #0f1f3d;
+      --muted:        #4a6080;
+      --muted-2:      #8aa0bc;
+      --primary:      #1e4078;
+      --primary-h:    #163060;
+      --primary-glow: rgba(30,64,120,0.12);
+      --green:        #0f7c4a;
+      --green-dim:    rgba(15,124,74,0.1);
+      --amber:        #b45309;
+      --mono:         'DM Mono', monospace;
+      --display:      'Syne', sans-serif;
+      --body:         'DM Sans', sans-serif;
+      --radius:       12px;
+      --radius-sm:    8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      flex-shrink: 0;
+      background: rgba(240,244,249,0.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; gap: 0.625rem; }
+    .logo-mark {
+      width: 28px; height: 28px;
+      background: var(--primary);
+      border-radius: 7px;
+      display: grid; place-items: center;
+    }
+    .logo-word { font-family: var(--display); font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+
+    .user-chip {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 0.2rem 0.65rem 0.2rem 0.3rem;
+      font-size: 0.75rem; font-weight: 500; color: var(--muted);
+    }
+    .avatar {
+      width: 20px; height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 0.55rem; font-weight: 800; color: white;
+    }
+
+    .btn-logout {
+      display: flex; align-items: center; gap: 0.3rem;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.3rem 0.65rem;
+      font-family: var(--body);
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-left: 0.5rem;
+    }
+    .btn-logout:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      gap: 2rem;
+    }
+
+    /* ── HERO WELCOME ── */
+    .hero {
+      text-align: center;
+      animation: rise 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--primary);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .hero h1 {
+      font-family: var(--display);
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--primary);
+    }
+    .hero-sub {
+      margin-top: 1rem;
+      font-size: 0.9375rem;
+      color: var(--muted);
+      max-width: 30rem;
+    }
+    .hero-sub strong { color: var(--fg); font-weight: 600; }
+
+    /* ── ENGINE STATUS CARD ── */
+    .status-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: rise 0.6s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .card-header {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .dot.green { background: #0f7c4a; box-shadow: 0 0 6px rgba(15,124,74,0.5); }
+    .dot.amber { background: var(--amber); }
+    .dot.red   { background: var(--primary); }
+    .card-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-left: 0.25rem;
+    }
+
+    .status-rows { padding: 0.5rem 0; }
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      border-bottom: 1px solid var(--border);
+      animation: row-in 0.4s ease both;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-key { color: var(--muted); }
+    .status-val { color: var(--green); }
+    .status-val.dim { color: var(--amber); }
+    .status-val.red { color: var(--primary); }
+
+    /* ── DEMO PANEL ── */
+    .demo-panel {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: rise 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .demo-header {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .demo-header span { color: var(--primary); }
+
+    .demo-body { padding: 1rem; }
+
+    .note-list { display: flex; flex-direction: column; gap: 0.4rem; min-height: 3rem; }
+    .note-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .note-text { flex: 1; line-height: 1.4; }
+    .note-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--muted-2); white-space: nowrap; margin-top: 2px; }
+    .btn-del {
+      background: none; border: none;
+      color: var(--muted-2); cursor: pointer;
+      font-size: 0.85rem; padding: 0 0.2rem;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-del:hover { color: var(--primary); }
+
+    .empty-notes {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted-2);
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .compose-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .compose-input {
+      flex: 1;
+      height: 2.4rem;
+      padding: 0 0.75rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--body);
+      font-size: 0.875rem;
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .compose-input::placeholder { color: var(--muted-2); }
+    .compose-input:focus { border-color: rgba(30,64,120,0.4); }
+
+    .btn-add {
+      height: 2.4rem;
+      padding: 0 1rem;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-add:hover { background: var(--primary-h); }
+    .btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── LOGOUT MODAL ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(15,31,61,0.5);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      width: calc(100% - 2rem);
+      max-width: 320px;
+      animation: pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .modal h3 { font-family: var(--display); font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .modal p  { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 0.5rem; }
+    .btn-cancel {
+      flex: 1; height: 2.75rem;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--body); font-size: 0.9rem; font-weight: 600;
+      color: var(--muted); cursor: pointer; transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: var(--surface); }
+    .btn-confirm {
+      flex: 1; height: 2.75rem;
+      background: var(--primary); border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--body); font-size: 0.9rem; font-weight: 600;
+      color: white; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-confirm:hover { background: var(--primary-h); }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.625rem;
+      color: var(--muted-2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 1.25rem;
+      flex-shrink: 0;
+    }
+    .footer span { color: var(--primary); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.88); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes row-in {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+        <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white"/>
+        <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white"/>
+      </svg>
+    </div>
+    <span class="logo-word">Gnoke</span>
+  </div>
+  <div style="display:flex;align-items:center;">
+    <div class="user-chip">
+      <div class="avatar" id="user-avatar">?</div>
+      <span id="user-label">…</span>
+    </div>
+    <button class="btn-logout" onclick="confirmLogout()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sign Out
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Engine running</div>
+    <h1>Hello, <em id="hero-name">World.</em></h1>
+    <p class="hero-sub">
+      You're signed in as <strong id="hero-id">…</strong> on branch <strong id="hero-branch">…</strong>.
+      The Gnoke engine is live — offline-first, syncing in the background.
+    </p>
+  </div>
+
+  <!-- ENGINE STATUS -->
+  <div class="status-card">
+    <div class="card-header">
+      <div class="dot green"></div>
+      <div class="dot amber"></div>
+      <div class="dot red"></div>
+      <span class="card-title">gnoke-engine · status</span>
+    </div>
+    <div class="status-rows" id="status-rows">
+      <!-- injected by JS -->
+    </div>
+  </div>
+
+  <!-- LIVE DEMO -->
+  <div class="demo-panel">
+    <div class="demo-header">
+      GnokeStore.save(<span>'notes'</span>) · GnokeStore.query(<span>'notes'</span>)
+    </div>
+    <div class="demo-body">
+      <div class="note-list" id="note-list">
+        <div class="empty-notes">No notes yet — write something below.</div>
+      </div>
+      <div class="compose-row">
+        <input
+          class="compose-input"
+          id="note-input"
+          type="text"
+          placeholder="Type a note and hit Save…"
+          onkeydown="if(event.key==='Enter') addNote()"
+          oninput="document.getElementById('btn-add').disabled=!this.value.trim()"
+        >
+        <button class="btn-add" id="btn-add" onclick="addNote()" disabled>Save</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Powered by <span>Gnoke</span> Kernel · MIT · <span id="footer-time"></span>
+</footer>
+
+<!-- LOGOUT MODAL -->
+<div class="modal-backdrop" id="logout-modal">
+  <div class="modal">
+    <h3>Sign Out?</h3>
+    <p>Your notes are saved locally and will sync next time you sign in. You won't lose anything.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeLogout()">Stay</button>
+      <button class="btn-confirm" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- GNOKE ENGINE — load order matters -->
+<script src="gnoke-store.js"></script>
+<script src="gnoke-sync.js"></script>
+<script src="gnoke-pull.js"></script>
+<script src="gnoke-secure.js"></script>
+<script src="gnoke-config.js"></script>
+
+<script>
+/* ── Session bootstrap ── */
+let SESSION = null;
+
+(function boot() {
+  try {
+    const sess = JSON.parse(localStorage.getItem('gnoke_session'));
+    const auth = JSON.parse(localStorage.getItem('gnoke_sync_auth'));
+    if (!sess?.user_id || !auth?.syncAuthorized) {
+      location.replace('index.html');
+      return;
+    }
+    SESSION = sess;
+
+    // Hydrate GnokeStore identity from session
+    GnokeStore.configure({
+      user_id      : sess.user_id,
+      workspace_id : sess.workspace_id,
+    });
+
+    initUI();
+    initStatus();
+    initNotes();
+  } catch {
+    location.replace('index.html');
+  }
+})();
+
+/* ── UI ── */
+function initUI() {
+  const id       = SESSION.identifier || SESSION.user_id;
+  const branch   = SESSION.workspace_id || 'unknown';
+  const initials = id.replace(/[^a-z0-9]/gi, '').slice(0, 2).toUpperCase() || '??';
+  const firstName = id.split(/[@.\-_]/)[0] || id;
+
+  document.getElementById('user-avatar').textContent = initials;
+  document.getElementById('user-label').textContent  = id.length > 20 ? id.slice(0, 20) + '…' : id;
+  document.getElementById('hero-name').textContent   = firstName.charAt(0).toUpperCase() + firstName.slice(1) + '.';
+  document.getElementById('hero-id').textContent     = id;
+  document.getElementById('hero-branch').textContent = branch;
+  document.getElementById('footer-time').textContent = new Date().toLocaleTimeString();
+}
+
+/* ── Engine Status ── */
+function initStatus() {
+  const identity = GnokeStore.configure(); // called with no args = snapshot
+  const rows = [
+    { key: 'session.user_id',      val: SESSION.user_id },
+    { key: 'session.workspace_id', val: SESSION.workspace_id || '—' },
+    { key: 'session.role',         val: SESSION.role || 'operator' },
+    { key: 'store.company_id',     val: identity.company_id || '—' },
+    { key: 'store.app_id',         val: identity.app_id || '—' },
+    { key: 'store.endpoint',       val: identity.endpoint ? '✓ set' : '✗ missing', dim: !identity.endpoint },
+    { key: 'collections.defined',  val: 'notes, messages, deliveries' },
+    { key: 'engine.status',        val: '● running' },
+  ];
+
+  const container = document.getElementById('status-rows');
+  rows.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'status-row';
+    div.style.animationDelay = (i * 0.04) + 's';
+    div.innerHTML = `
+      <span class="status-key">${r.key}</span>
+      <span class="status-val${r.dim ? ' dim' : ''}">${escHtml(String(r.val))}</span>
+    `;
+    container.appendChild(div);
+  });
+}
+
+/* ── Notes (live engine demo) ── */
+function initNotes() {
+  GnokeStore.define('notes', { scope: 'user' });
+  GnokeStore.onChange('notes', renderNotes);
+  renderNotes(GnokeStore.query('notes'));
+}
+
+function addNote() {
+  const input = document.getElementById('note-input');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  GnokeStore.save('notes', {
+    text,
+    author     : SESSION.identifier || SESSION.user_id,
+    created_at : new Date().toISOString(),
+  });
+
+  input.value = '';
+  document.getElementById('btn-add').disabled = true;
+  input.focus();
+}
+
+function deleteNote(id) {
+  GnokeStore.remove('notes', id);
+}
+
+function renderNotes(records) {
+  const list = document.getElementById('note-list');
+  const notes = (records || []).filter(r => !r.deleted)
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+  if (notes.length === 0) {
+    list.innerHTML = '<div class="empty-notes">No notes yet — write something below.</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  notes.forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'note-item';
+    const time = n.data?.created_at
+      ? new Date(n.data.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : '';
+    div.innerHTML = `
+      <div>
+        <div class="note-text">${escHtml(n.data?.text || '')}</div>
+        <div class="note-meta">${time}</div>
+      </div>
+      <button class="btn-del" onclick="deleteNote('${n.id}')" title="Delete">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Logout ── */
+function confirmLogout() { document.getElementById('logout-modal').classList.add('open'); }
+function closeLogout()   { document.getElementById('logout-modal').classList.remove('open'); }
+function doLogout() {
+  if (window.GNOKE_SECURE?.signOut) {
+    GNOKE_SECURE.signOut();
+  } else {
+    localStorage.removeItem('gnoke_sync_auth');
+    localStorage.removeItem('gnoke_session');
+    location.replace('index.html');
+  }
+}
+</script>
+</body>
+</html>
