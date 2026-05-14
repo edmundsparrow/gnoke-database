@@ -164,6 +164,10 @@ Run the configurator again. New endpoint, new `ADMIN_SECRET`, new `DB_PATH` (dif
 
 ---
 
+Demo endpoint included for testing purposes only.
+ Replace with your own endpoint before production use. See "TODO.md".
+---
+
 *Gnoke Suite 2025 - 2026 — MIT License.*
 
 ---
