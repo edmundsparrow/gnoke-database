@@ -7,7 +7,7 @@
   'use strict';
 
   const SESSION_KEY = 'app_session';
-  const APP_PAGE    = '/app';
+  const APP_PAGE    = 'app';
 
   let _mode = 'login';
 
