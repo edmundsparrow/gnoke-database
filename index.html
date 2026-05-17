@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
   <style>
-    /* ── TOKENS ── */
     :root {
       --bg:           #f6f7f9;
       --surface:      #ffffff;
@@ -21,13 +20,11 @@
       --muted-2:      #9ca3af;
       --primary:      #dc2626;
       --primary-h:    #b91c1c;
-      --primary-glow: rgba(220,38,38,0.18);
       --ring:         rgba(220,38,38,0.25);
       --radius:       14px;
       --radius-sm:    9px;
       --font-display: 'Syne', sans-serif;
       --font-body:    'DM Sans', sans-serif;
-      /* gnoke-auth.css compat */
       --green: #22c55e;
       --red:   #ef4444;
     }
@@ -38,7 +35,6 @@
 
     .page { position: relative; z-index: 1; display: flex; align-items: stretch; min-height: 100vh; }
 
-    /* LEFT BRAND COLUMN */
     .brand { display: none; flex: 1; flex-direction: column; justify-content: space-between; padding: 3.5rem 4rem; border-right: 1px solid var(--border); }
     @media (min-width: 900px) { .brand { display: flex; } }
     .brand-logo { display: flex; align-items: center; gap: 0.625rem; }
@@ -50,7 +46,6 @@
     .brand-sub { margin-top: 1.25rem; font-size: 1rem; color: var(--muted); max-width: 28rem; }
     .brand-footer { font-size: 0.6875rem; color: var(--muted-2); letter-spacing: 0.12em; text-transform: uppercase; }
 
-    /* RIGHT PANEL */
     .panel { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; }
     @media (min-width: 900px) { .panel { width: 480px; padding: 3rem; } }
     .panel-inner { width: 100%; max-width: 380px; animation: fade-up 0.4s ease both; }
@@ -58,10 +53,9 @@
     .panel-title { font-family: var(--font-display); font-size: 1.625rem; font-weight: 800; letter-spacing: -0.025em; }
     .panel-sub { margin-top: 0.375rem; margin-bottom: 2rem; font-size: 0.875rem; color: var(--muted); }
 
-    /* Fields */
     .field { margin-bottom: 0.875rem; }
     .field label { display: block; font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
-    .field input, .field select {
+    .field input {
       width: 100%; height: 2.875rem; padding: 0 1rem; font-family: var(--font-body); font-size: 0.9375rem;
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; color: var(--fg);
     }
@@ -75,22 +69,18 @@
     .btn-submit:hover:not(:disabled) { background: var(--primary-h); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* Notify */
     .notify {
       min-height: 1.4rem; font-size: .85rem; text-align: center;
       color: var(--muted); margin-top: .75rem; opacity: 0; transition: opacity .2s;
     }
-    .notify.show { opacity: 1; }
-    .notify.ok   { opacity: 1; color: var(--green); }
-    .notify.err  { opacity: 1; color: var(--red); }
+    .notify.ok  { opacity: 1; color: var(--green); }
+    .notify.err { opacity: 1; color: var(--red); }
 
     .toggle-row { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--muted); }
     .toggle-row button { background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; font-family: var(--font-body); }
 
     .powered { margin-top: 2.5rem; text-align: center; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); }
-    .powered span { color: var(--primary); }
 
-    /* Modal Backdrop */
     .modal-backdrop { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
     .modal-backdrop.open { display: flex; }
     .modal { background: var(--surface); padding: 2rem; border-radius: var(--radius); width: 100%; max-width: 360px; }
@@ -119,80 +109,68 @@
     </div>
     <div class="brand-body">
       <h1 class="brand-headline">Your App,<br><em>Your Data.</em></h1>
-      <p class="brand-sub">Staff sign in and sync their data in real time — offline-first, branch-aware, and entirely self-hosted.</p>
+      <p class="brand-sub">Your tagline goes here.</p>
     </div>
-    <p class="brand-footer">Gnoke Kernel · © 2026</p>
+    <p class="brand-footer">Powered by GnokeSuite © 2026</p>
   </div>
 
   <div class="panel">
     <div class="panel-inner">
-      <h2 class="panel-title" id="mode-title">Staff Login</h2>
-      <p class="panel-sub" id="mode-sub">Sign in to access your workspace data</p>
+      <h2 class="panel-title" id="mode-title">Sign In</h2>
+      <p class="panel-sub" id="mode-sub">Access your account</p>
 
-      <form id="auth-form" onsubmit="GNK.submit(event)">
+      <form id="auth-form" onsubmit="Auth.submit(event)">
 
-        <!-- Registration-only fields -->
         <div id="reg-fields" style="display:none">
           <div class="field">
             <label>Full Name *</label>
-            <input type="text" id="gnk-name" placeholder="John Okoro">
+            <input type="text" id="field-name" placeholder="Your name">
           </div>
           <div class="field">
             <label>Phone Number *</label>
-            <input type="tel" id="gnk-phone" placeholder="080...">
+            <input type="tel" id="field-phone" placeholder="080...">
           </div>
           <div class="field">
             <label>Email Address *</label>
-            <input type="email" id="gnk-email" placeholder="staff@company.com">
-          </div>
-          <div class="field">
-            <label>Branch / Office *</label>
-            <select id="gnk-branch">
-              <option value="" disabled selected>Select Branch</option>
-              <option value="hq">Headquarters</option>
-              <option value="branch-a">Branch A</option>
-              <option value="branch-b">Branch B</option>
-            </select>
+            <input type="email" id="field-email" placeholder="you@example.com">
           </div>
         </div>
 
-        <!-- Login-only field -->
         <div class="field" id="login-field">
-          <label id="login-id-label">Phone or Email *</label>
-          <input type="text" id="gnk-id" placeholder="080... or staff@company.com" autocomplete="username">
+          <label>Phone or Email *</label>
+          <input type="text" id="field-id" placeholder="080... or you@example.com" autocomplete="username">
         </div>
 
         <div class="field">
-          <label id="pin-label">Staff PIN *</label>
-          <input type="password" id="gnk-pw" placeholder="••••" required>
+          <label id="pin-label">PIN *</label>
+          <input type="password" id="field-pin" placeholder="••••" required>
         </div>
 
         <div class="field" id="field-confirm" style="display:none">
           <label>Confirm PIN *</label>
-          <input type="password" id="gnk-confirm" placeholder="••••">
+          <input type="password" id="field-pin-confirm" placeholder="••••">
         </div>
 
         <div class="field" id="field-auth" style="display:none">
           <label>Authorization Code *</label>
-          <input type="text" id="gnk-auth" placeholder="Provided by admin">
+          <input type="text" id="field-auth-code" placeholder="Provided by admin">
         </div>
 
         <button type="submit" class="btn-submit" id="btn-submit">Sign In</button>
       </form>
 
-      <!-- Notify -->
       <div class="notify" id="notify"></div>
 
       <div class="toggle-row">
-        <span id="toggle-text">New staff member?&nbsp;</span>
-        <button id="toggle-btn" onclick="GNK.toggleMode()">Sign Up</button>
+        <span id="toggle-text">New here?&nbsp;</span>
+        <button id="toggle-btn" onclick="Auth.toggleMode()">Create Account</button>
       </div>
 
       <div class="toggle-row" style="margin-top:0.5rem">
-        <button style="color:var(--muted); font-weight:400; font-size:0.8125rem" onclick="GNK.openRestore()">♻️ Restore Account</button>
+        <button style="color:var(--muted); font-weight:400; font-size:0.8125rem" onclick="Auth.openRestore()">♻️ Restore Account</button>
       </div>
 
-      <p class="powered">Powered by <span>Gnoke</span> Kernel</p>
+      <p class="powered">Powered by GnokeSuite © 2026</p>
     </div>
   </div>
 </div>
@@ -204,7 +182,7 @@
     <p>Enter your phone or email, the OTP code your admin sent you, and choose a new PIN for this device.</p>
     <div class="field">
       <label>Phone or Email *</label>
-      <input type="text" id="restore-id" placeholder="080... or staff@company.com" autocomplete="username">
+      <input type="text" id="restore-id" placeholder="080... or you@example.com" autocomplete="username">
     </div>
     <div class="field">
       <label>OTP Code *</label>
@@ -215,289 +193,13 @@
       <label>New PIN *</label>
       <input type="password" id="restore-pin" placeholder="••••••" autocomplete="new-password">
     </div>
-    <button class="btn-submit" id="restore-submit" onclick="GNK.redeemOtp()">Restore Access</button>
-    <button class="btn-secondary" onclick="GNK.closeRestore()">Cancel</button>
+    <button class="btn-submit" id="restore-submit" onclick="Auth.redeemOtp()">Restore Access</button>
+    <button class="btn-secondary" onclick="Auth.closeRestore()">Cancel</button>
     <div class="notify" id="restore-notify"></div>
   </div>
 </div>
 
-<script src="gnoke-config.js"></script>
-<script>
-
-/* ── Helpers ── */
-
-/*
-  device_id = SHA-256( identifier | pin )
-  Deterministic — same credentials on any device = same device_id.
-  company_id and app_id removed — single-tenant server doesn't need them.
-  Wrong PIN = different device_id = new token = login fails. This is the auth gate.
-*/
-async function buildDeviceId(identifier, pin) {
-  const raw = `${identifier.trim().toLowerCase()}|${pin}`;
-  if (window.crypto?.subtle) {
-    const buf    = new TextEncoder().encode(raw);
-    const digest = await crypto.subtle.digest('SHA-256', buf);
-    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-  return btoa(raw).replace(/[^a-z0-9]/gi, '').slice(0, 64); // legacy fallback
-}
-
-function setNotify(msg, type = '', elId = 'notify') {
-  const el = document.getElementById(elId);
-  if (!el) return;
-  el.textContent = msg;
-  el.className   = 'notify' + (type ? ' ' + type : ' show');
-}
-
-function setBusy(on, label) {
-  const btn = document.getElementById('btn-submit');
-  if (!btn) return;
-  btn.disabled    = on;
-  btn.textContent = on ? 'Please wait…' : label;
-}
-
-function saveSession({ token, user_id, workspace_id, role }, identifier, device_id) {
-  /* Write sync auth exactly as gnoke-sync.js authorize() expects */
-  localStorage.setItem('gnoke_sync_auth', JSON.stringify({
-    syncAuthorized : true,
-    syncToken      : token,
-    authorizedAt   : new Date().toISOString(),
-  }));
-  /* Write session as gnoke-secure.js expects on app.html boot */
-  localStorage.setItem('gnoke_session', JSON.stringify({
-    user_id,
-    workspace_id : workspace_id || '',
-    role         : role || 'operator',
-    identifier,
-    device_id,
-  }));
-}
-
-/* ── GNK Controller ── */
-const GNK = {
-  isSignup: false,
-
-  toggleMode() {
-    this.isSignup = !this.isSignup;
-    const r = this.isSignup;
-
-    document.getElementById('mode-title').textContent = r ? 'Registration'              : 'Staff Login';
-    document.getElementById('mode-sub').textContent   = r ? 'Takes under a minute'      : 'Sign in to access your workspace data';
-    document.getElementById('btn-submit').textContent = r ? 'Finish Setup'              : 'Sign In';
-    document.getElementById('pin-label').textContent  = r ? 'Create PIN *'              : 'Staff PIN *';
-
-    document.getElementById('reg-fields').style.display    = r ? 'block' : 'none';
-    document.getElementById('login-field').style.display   = r ? 'none'  : 'block';
-    document.getElementById('field-confirm').style.display = r ? 'block' : 'none';
-    document.getElementById('field-auth').style.display    = r ? 'block' : 'none';
-
-    document.getElementById('gnk-name').required    = r;
-    document.getElementById('gnk-branch').required  = r;
-    document.getElementById('gnk-confirm').required = r;
-    document.getElementById('gnk-auth').required    = r;
-    document.getElementById('gnk-id').required      = !r;
-    // phone + email are "at least one" — validated in JS, not via HTML required
-
-    document.getElementById('toggle-text').textContent  = r ? 'Already have an account? ' : 'New staff member? ';
-    document.getElementById('toggle-btn').textContent   = r ? 'Sign In'                   : 'Sign Up';
-    setNotify('');
-  },
-
-  openRestore()  { document.getElementById('otp-modal').classList.add('open'); setNotify('', '', 'restore-notify'); },
-  closeRestore() { document.getElementById('otp-modal').classList.remove('open'); },
-
-  async submit(e) {
-    e.preventDefault();
-    setNotify('');
-    if (this.isSignup) {
-      await this._register();
-    } else {
-      await this._signIn();
-    }
-  },
-
-  async _signIn() {
-    const identifier = document.getElementById('gnk-id').value.trim().toLowerCase();
-    const pin        = document.getElementById('gnk-pw').value;
-    const isEmail    = identifier.includes('@');
-
-    if (!identifier) { setNotify('Enter your phone number or email.', 'err'); return; }
-    if (!pin || pin.length < 4) { setNotify('PIN must be at least 4 characters.', 'err'); return; }
-
-    setBusy(true, 'Sign In');
-    setNotify('Connecting…');
-
-    try {
-      const device_id = await buildDeviceId(identifier, pin);
-
-      const res = await fetch(`${GNOKE_ENDPOINT}?action=save-profile`, {
-        method  : 'POST',
-        headers : { 'Content-Type': 'application/json' },
-        body    : JSON.stringify({
-          [isEmail ? 'email' : 'phone'] : identifier,
-          device_id,
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data?.ok) {
-        setNotify(data?.error || 'Server error — try again.', 'err');
-        setBusy(false, 'Sign In');
-        return;
-      }
-
-      const workspace_id = data.workspace_id || '';
-      saveSession({ ...data, workspace_id }, identifier, device_id);
-
-      setNotify('Signed in successfully! Redirecting…', 'ok');
-      setTimeout(() => window.location.replace('app.html'), 800);
-
-    } catch {
-      setNotify('Network error — check connection.', 'err');
-      setBusy(false, 'Sign In');
-    }
-  },
-
-  async _register() {
-    const name     = document.getElementById('gnk-name').value.trim();
-    const phone    = document.getElementById('gnk-phone').value.trim();
-    const email    = document.getElementById('gnk-email').value.trim();
-    const branch   = document.getElementById('gnk-branch').value;
-    const pin      = document.getElementById('gnk-pw').value;
-    const confirm  = document.getElementById('gnk-confirm').value;
-    const authCode = document.getElementById('gnk-auth').value.trim();
-
-    if (!name)                   { setNotify('Enter your full name.', 'err'); return; }
-    if (!phone && !email)        { setNotify('Enter at least a phone number or email.', 'err'); return; }
-    if (!branch)                 { setNotify('Select your branch.', 'err'); return; }
-    if (!pin || pin.length < 4)  { setNotify('PIN must be at least 4 characters.', 'err'); return; }
-    if (pin !== confirm)         { setNotify('PINs do not match.', 'err'); return; }
-    if (authCode !== GNOKE_REG_SECRET) { setNotify('Invalid authorization code.', 'err'); return; }
-
-    setBusy(true, 'Finish Setup');
-    setNotify('Creating account…');
-
-    try {
-      /* canonical identifier: phone if provided, email as fallback
-         must stay consistent — whichever is used here must be used on login */
-      const canonical = (phone || email).toLowerCase();
-      const device_id = await buildDeviceId(canonical, pin);
-
-      const res = await fetch(`${GNOKE_ENDPOINT}?action=save-profile`, {
-        method  : 'POST',
-        headers : { 'Content-Type': 'application/json' },
-        body    : JSON.stringify({
-          phone,
-          email,
-          name,
-          workspace_id : branch,
-          role         : 'operator',
-          device_id,
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data?.ok) {
-        setNotify(data?.error || 'Registration failed — try again.', 'err');
-        setBusy(false, 'Finish Setup');
-        return;
-      }
-
-      const workspace_id = data.workspace_id || branch || '';
-      saveSession({ ...data, workspace_id, role: 'operator' }, canonical, device_id);
-
-      setNotify('Account created! Sign in to continue.', 'ok');
-      setBusy(false, 'Finish Setup');
-      setTimeout(() => GNK.toggleMode(), 2000);
-
-    } catch {
-      setNotify('Network error — check connection.', 'err');
-      setBusy(false, 'Finish Setup');
-    }
-  },
-
-  async redeemOtp() {
-    const identifier = document.getElementById('restore-id').value.trim();
-    const otp        = document.getElementById('restore-code').value.trim().toUpperCase();
-    const pin        = document.getElementById('restore-pin').value;
-    const isEmail    = identifier.includes('@');
-
-    if (!identifier)            { setNotify('Enter your phone or email.', 'err', 'restore-notify'); return; }
-    if (!otp || otp.length < 6) { setNotify('Enter a valid OTP code.', 'err', 'restore-notify'); return; }
-    if (!pin || pin.length < 4) { setNotify('New PIN must be at least 4 characters.', 'err', 'restore-notify'); return; }
-
-    const btn = document.getElementById('restore-submit');
-    btn.disabled    = true;
-    btn.textContent = 'Restoring…';
-    setNotify('Verifying OTP…', '', 'restore-notify');
-
-    try {
-      const device_id = await buildDeviceId(identifier, pin);
-
-      const res = await fetch(`${GNOKE_ENDPOINT}?action=redeem-otp`, {
-        method  : 'POST',
-        headers : { 'Content-Type': 'application/json' },
-        body    : JSON.stringify({
-          otp,
-          [isEmail ? 'email' : 'phone'] : identifier,
-          device_id,
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data?.ok) {
-        setNotify(data?.error || 'Invalid or expired OTP.', 'err', 'restore-notify');
-        btn.disabled = false; btn.textContent = 'Restore Access';
-        return;
-      }
-
-      const { token, user_id, profile } = data;
-      const workspace_id = profile?.workspace_id || '';
-      saveSession({ token, user_id, workspace_id, role: profile?.role }, identifier, device_id);
-
-      setNotify('Account restored! You can now sign in.', 'ok', 'restore-notify');
-      GNK.closeRestore();
-      setTimeout(() => GNK.toggleMode() || (GNK.isSignup && GNK.toggleMode()), 1500);
-
-    } catch {
-      setNotify('Network error — check connection.', 'err', 'restore-notify');
-      btn.disabled = false; btn.textContent = 'Restore Access';
-    }
-  },
-};
-
-/* ── Auto-login: skip login page if session already exists ── */
-document.addEventListener('DOMContentLoaded', () => {
-  try {
-    const auth = JSON.parse(localStorage.getItem('gnoke_sync_auth'));
-    const sess = JSON.parse(localStorage.getItem('gnoke_session'));
-    if (auth?.syncAuthorized && auth?.syncToken && sess?.user_id && sess?.workspace_id) {
-      // Session exists — redirect to app
-      window.location.replace('app.html');
-    }
-  } catch { /* no session — stay on login page */ }
-});
-
-/* ── Background Dots ── */
-(function () {
-  const canvas = document.getElementById('bg');
-  const ctx    = canvas.getContext('2d');
-  let W, H, dots = [];
-  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; makeDots(); }
-  function makeDots() { dots = []; for (let x = 0; x < W; x += 40) { for (let y = 0; y < H; y += 40) { dots.push({ x, y, a: Math.random() * 2 * Math.PI }); } } }
-  function draw(t) {
-    ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#dc2626';
-    dots.forEach(d => {
-      ctx.globalAlpha = 0.15 + 0.1 * Math.sin(t * 0.001 + d.a);
-      ctx.beginPath(); ctx.arc(d.x, d.y, 0.8, 0, 7); ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  window.addEventListener('resize', resize); resize(); requestAnimationFrame(draw);
-})();
-</script>
+  <script src="scripts/connect.js"></script>
+  <script src="scripts/main.js"></script>
 </body>
 </html>
