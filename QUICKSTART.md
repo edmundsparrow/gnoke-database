@@ -301,6 +301,103 @@ sqlite3 api/gnoke-data/gnoke.db ".backup api/gnoke-data/gnoke.backup.db"
 
 ---
 
+## 🔧 Extending the Engine
+
+This section is for developers building admin tools, custom dashboards, or additional CRUD actions on top of Gnoke — for example, a rider management panel, a product catalogue, or an admin reporting interface.
+
+### The Golden Rules
+
+**1. Never edit the frozen files.**
+`engine.php`, `data.php`, `gnoke-store.js`, `gnoke-sync.js`, `gnoke-pull.js`, and `main.js` are frozen. All custom logic belongs in `index.php` (backend) or your own app files (frontend). If you feel you need to edit a frozen file, the answer is almost always a new action in `index.php` instead.
+
+**2. Never hardcode the endpoint in app code.**
+`GNOKE_ENDPOINT` is defined once in `gnoke-config.js` by the configurator. All frontend modules — including any admin panels you build — must load `gnoke-config.js` and reference `GNOKE_ENDPOINT` directly. Never paste the URL string into your own JS files.
+
+```html
+<!-- Load this before your admin scripts -->
+<script src="../scripts/gnoke-config.js"></script>
+```
+
+```js
+// Correct — reads from config
+const _API = GNOKE_ENDPOINT;
+
+// Wrong — breaks on redeployment
+const _API = 'https://yourdomain.com/api/index.php';
+```
+
+**3. Never create a parallel database connection.**
+All database access goes through the engine's `db()` function in `index.php`. Creating a second `PDO` connection in a separate file will drift from the engine's schema and cause conflicts. Add your custom actions to `index.php` instead — they get the same `db()`, `body()`, `require_admin()`, `now_iso()`, and `gen_id()` helpers for free.
+
+**4. All custom actions belong in `index.php`.**
+The switch block in `index.php` is the only router. Add your action there and write the handler function at the bottom of the same file.
+
+```php
+// In the switch block — admin-secret protected
+case 'list-riders':  handle_list_riders();  break;
+case 'save-rider':   handle_save_rider();   break;
+case 'delete-rider': handle_delete_rider(); break;
+```
+
+```php
+// Handler at the bottom of index.php — uses engine helpers
+function handle_list_riders(): void {
+    require_method('GET');
+    require_admin();
+    $stmt = db()->prepare("SELECT * FROM records WHERE collection='riders' AND deleted=0");
+    $stmt->execute();
+    ok(['riders' => $stmt->fetchAll()]);
+}
+```
+
+**5. `gnoke-config.php` and `gnoke-config.js` are the only files you edit per deployment.**
+Use the configurator (`tool/g-configurator.html`) to regenerate them whenever your secrets, endpoint, roles, schemas, or workspaces change. Do not manually maintain config values across files — the configurator is the single source of truth.
+
+### Admin Tools Pattern
+
+If you're building an admin panel separate from the operator app:
+
+```
+your-project/
+├── admin/
+│   ├── index.html           ← Admin gate + dashboard
+│   └── js/
+│       ├── admin-core.js    ← Auth gate, api() helper using GNOKE_ENDPOINT
+│       └── admin-ui.js      ← Tab wiring, UI logic
+├── scripts/
+│   └── gnoke-config.js      ← Single source of truth for endpoint
+└── api/
+    └── index.php            ← All custom actions added here
+```
+
+- Load `../scripts/gnoke-config.js` in `admin/index.html` before your admin scripts
+- Protect admin actions with `require_admin()` — validates `X-Admin-Secret` header against `ADMIN_SECRET` in `gnoke-config.php`
+- Never create `admin-data.php` or any parallel API file — it will drift from the engine schema
+
+### What the Engine Already Gives You
+
+You don't need to write auth, tokens, OTP, or sync from scratch. These actions are already in `index.php`:
+
+| Action | Protection | What it does |
+|--------|-----------|--------------|
+| `register` | Public | Create staff account |
+| `sign-in` | Public | Authenticate + issue token |
+| `redeem-otp` | Public | Restore access via OTP |
+| `generate-otp` | Admin secret | Issue invite/restore code |
+| `revoke-token` | Admin secret | Deactivate a device |
+| `admin-profiles` | Admin secret | List all staff |
+| `admin-tokens` | Admin secret | List active devices |
+| `admin-records` | Admin secret | Browse all collections |
+| `save` | Token + role | Write a record |
+| `get` | Token + role | Read records |
+| `delete` | Token + role | Soft-delete a record |
+| `dispatch` | Token + role | Push local queue to server |
+| `updates` | Token + role | Pull changes from server |
+
+Your custom actions sit alongside these — same engine, same security model, same database.
+
+---
+
 ## ✅ You're Ready!
 
 1. Open `/tool/g-configurator.html`
