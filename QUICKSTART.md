@@ -303,84 +303,56 @@ sqlite3 api/gnoke-data/gnoke.db ".backup api/gnoke-data/gnoke.backup.db"
 
 ## 🔧 Extending the Engine
 
-**⚠️ Disclaimer:** The patterns and examples in this section are **generic templates**. They are not prescriptive for any particular use case. Adapt these patterns to fit your application's domain and business logic. The core principles (golden rules) apply universally; the code examples are just starting points.
+The engine is already capable of storing any kind of record for any domain — parcels, patients, harvests, ledgers, inventory, bookings. You do not need to touch `index.php` to add new data types.
 
-This section is for developers building admin tools, custom dashboards, or additional CRUD actions on top of Gnoke — for example, a management interface, a reporting dashboard, or additional API endpoints specific to your domain.
+**Collections are defined in the configurator. The engine handles the rest.**
 
-### The Golden Rules
+### Adding a New Collection
+
+1. Open `tool/g-configurator.html`
+2. Add your collection under **Collections** — name it and set its scope (`user`, `workspace`, or `company`)
+3. Optionally add a **Payload Schema** to enforce required fields
+4. Optionally add a **Role** to control who can read/write it
+5. Download and redeploy `gnoke-config.js` and `gnoke-config.php`
+
+That's it. No backend code changes. No touching `index.php`.
+
+```js
+// Your app immediately has access to the new collection
+GnokeStore.save('bookings', {
+    customer : 'Amara Osei',
+    date     : '2026-06-01',
+    service  : 'Delivery',
+});
+
+GnokeStore.onChange('bookings', render);
+```
+
+### The Only Rules
 
 **1. Never edit the frozen files.**
-`engine.php`, `data.php`, `gnoke-store.js`, `gnoke-sync.js`, `gnoke-pull.js`, and `main.js` are frozen. All custom logic belongs in `index.php` (backend) or your own app files (frontend). If you feel you need to edit a frozen file, the answer is almost always a new action in `index.php` instead.
+`engine.php`, `data.php`, `gnoke-store.js`, `gnoke-sync.js`, `gnoke-pull.js`, and `main.js` are frozen. If you feel the need to edit one, the answer is almost always a config change in the configurator instead.
 
-**2. Never hardcode the endpoint in app code.**
-`GNOKE_ENDPOINT` is defined once in `gnoke-config.js` by the configurator. All frontend modules — including any admin panels you build — must load `gnoke-config.js` and reference `GNOKE_ENDPOINT` directly. Never paste the URL string into your own JS files.
+**2. Never hardcode the endpoint.**
+`GNOKE_ENDPOINT` is defined once in `gnoke-config.js` by the configurator. Every frontend file — including any admin panel you build — must load `gnoke-config.js` first and reference `GNOKE_ENDPOINT` directly.
 
 ```html
-<!-- Load this before your admin scripts -->
+<!-- Always load this first -->
 <script src="../scripts/gnoke-config.js"></script>
 ```
 
 ```js
-// Correct — reads from config
+// Correct
 const _API = GNOKE_ENDPOINT;
 
-// Wrong — breaks on redeployment
+// Wrong — breaks on every redeployment
 const _API = 'https://yourdomain.com/api/index.php';
 ```
 
-**3. Never create a parallel database connection.**
-All database access goes through the engine's `db()` function in `index.php`. Creating a second `PDO` connection in a separate file will drift from the engine's schema and cause conflicts. Add your custom actions to `index.php` instead — they get the same `db()`, `body()`, `require_admin()`, `now_iso()`, and `gen_id()` helpers for free.
-
-**4. All custom actions belong in `index.php`.**
-The switch block in `index.php` is the only router. Add your action there and write the handler function at the bottom of the same file.
-
-```php
-// In the switch block — admin-secret protected
-case 'list-entities':   handle_list_entities();   break;
-case 'save-entity':     handle_save_entity();     break;
-case 'delete-entity':   handle_delete_entity();   break;
-```
-
-```php
-// Handler at the bottom of index.php — uses engine helpers
-function handle_list_entities(): void {
-    require_method('GET');
-    require_admin();
-    $stmt = db()->prepare("SELECT * FROM records WHERE collection='entities' AND deleted=0");
-    $stmt->execute();
-    ok(['entities' => $stmt->fetchAll()]);
-}
-```
-
-**5. `gnoke-config.php` and `gnoke-config.js` are the only files you edit per deployment.**
-Use the configurator (`tool/g-configurator.html`) to regenerate them whenever your secrets, endpoint, roles, schemas, or workspaces change. Do not manually maintain config values across files — the configurator is the single source of truth.
-
-### Admin Tools Pattern
-
-If you're building an admin panel or management interface separate from your main app:
-
-```
-your-project/
-├── admin/
-│   ├── index.html           ← Admin gate + dashboard
-│   └── js/
-│       ├── admin-core.js    ← Auth gate, api() helper using GNOKE_ENDPOINT
-│       └── admin-ui.js      ← Tab wiring, UI logic
-├── scripts/
-│   └── gnoke-config.js      ← Single source of truth for endpoint
-└── api/
-    └── index.php            ← All custom actions added here
-```
-
-**Key principles:**
-- Load `../scripts/gnoke-config.js` in `admin/index.html` before your admin scripts
-- Protect admin actions with `require_admin()` — validates `X-Admin-Secret` header against `ADMIN_SECRET` in `gnoke-config.php`
-- Never create `admin-data.php` or any parallel API file — it will drift from the engine schema
-- Keep all business logic in `index.php` and fetch/display it from the frontend
+**3. The configurator is the single source of truth.**
+Secrets, endpoint, roles, schemas, workspaces — all defined once in the configurator and pushed to exactly two files: `gnoke-config.php` and `gnoke-config.js`. Never manually maintain config values across files.
 
 ### What the Engine Already Gives You
-
-You don't need to write auth, tokens, OTP, or sync from scratch. These actions are already in `index.php`:
 
 | Action | Protection | What it does |
 |--------|-----------|--------------|
@@ -398,9 +370,7 @@ You don't need to write auth, tokens, OTP, or sync from scratch. These actions a
 | `dispatch` | Token + role | Push local queue to server |
 | `updates` | Token + role | Pull changes from server |
 
-Your custom actions sit alongside these — same engine, same security model, same database.
-
----
+Any collection you define in the configurator is immediately accessible through these actions — no new backend code required.
 
 ## ✅ You're Ready!
 
