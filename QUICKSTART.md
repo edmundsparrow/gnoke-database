@@ -303,7 +303,9 @@ sqlite3 api/gnoke-data/gnoke.db ".backup api/gnoke-data/gnoke.backup.db"
 
 ## 🔧 Extending the Engine
 
-This section is for developers building admin tools, custom dashboards, or additional CRUD actions on top of Gnoke — for example, a rider management panel, a product catalogue, or an admin reporting interface.
+**⚠️ Disclaimer:** The patterns and examples in this section are **generic templates**. They are not prescriptive for any particular use case. Adapt these patterns to fit your application's domain and business logic. The core principles (golden rules) apply universally; the code examples are just starting points.
+
+This section is for developers building admin tools, custom dashboards, or additional CRUD actions on top of Gnoke — for example, a management interface, a reporting dashboard, or additional API endpoints specific to your domain.
 
 ### The Golden Rules
 
@@ -334,19 +336,19 @@ The switch block in `index.php` is the only router. Add your action there and wr
 
 ```php
 // In the switch block — admin-secret protected
-case 'list-riders':  handle_list_riders();  break;
-case 'save-rider':   handle_save_rider();   break;
-case 'delete-rider': handle_delete_rider(); break;
+case 'list-entities':   handle_list_entities();   break;
+case 'save-entity':     handle_save_entity();     break;
+case 'delete-entity':   handle_delete_entity();   break;
 ```
 
 ```php
 // Handler at the bottom of index.php — uses engine helpers
-function handle_list_riders(): void {
+function handle_list_entities(): void {
     require_method('GET');
     require_admin();
-    $stmt = db()->prepare("SELECT * FROM records WHERE collection='riders' AND deleted=0");
+    $stmt = db()->prepare("SELECT * FROM records WHERE collection='entities' AND deleted=0");
     $stmt->execute();
-    ok(['riders' => $stmt->fetchAll()]);
+    ok(['entities' => $stmt->fetchAll()]);
 }
 ```
 
@@ -355,7 +357,7 @@ Use the configurator (`tool/g-configurator.html`) to regenerate them whenever yo
 
 ### Admin Tools Pattern
 
-If you're building an admin panel separate from the operator app:
+If you're building an admin panel or management interface separate from your main app:
 
 ```
 your-project/
@@ -370,9 +372,11 @@ your-project/
     └── index.php            ← All custom actions added here
 ```
 
+**Key principles:**
 - Load `../scripts/gnoke-config.js` in `admin/index.html` before your admin scripts
 - Protect admin actions with `require_admin()` — validates `X-Admin-Secret` header against `ADMIN_SECRET` in `gnoke-config.php`
 - Never create `admin-data.php` or any parallel API file — it will drift from the engine schema
+- Keep all business logic in `index.php` and fetch/display it from the frontend
 
 ### What the Engine Already Gives You
 
@@ -380,12 +384,12 @@ You don't need to write auth, tokens, OTP, or sync from scratch. These actions a
 
 | Action | Protection | What it does |
 |--------|-----------|--------------|
-| `register` | Public | Create staff account |
+| `register` | Public | Create user account |
 | `sign-in` | Public | Authenticate + issue token |
 | `redeem-otp` | Public | Restore access via OTP |
 | `generate-otp` | Admin secret | Issue invite/restore code |
 | `revoke-token` | Admin secret | Deactivate a device |
-| `admin-profiles` | Admin secret | List all staff |
+| `admin-profiles` | Admin secret | List all users |
 | `admin-tokens` | Admin secret | List active devices |
 | `admin-records` | Admin secret | Browse all collections |
 | `save` | Token + role | Write a record |
