@@ -206,7 +206,7 @@ function handle_dispatch(array $t): void {
             '_dk'   => $parcel['dk']   ?? '',
         ]);
 
-        $id = trim($parcel['id'] ?? '') ?: ('r_' . gen_id(12));
+        $id = trim($parcel['payload']['id'] ?? $parcel['id'] ?? '') ?: ('r_' . gen_id(12)); // FIX: prefer payload.id so GnokeStore gk_xxx aligns with server record id → GNOKE_PULL merge works correctly
 
         $stmt->execute([
             ':id'   => $id,
