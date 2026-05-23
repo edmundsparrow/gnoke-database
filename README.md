@@ -243,6 +243,16 @@ Deploy it. Test it. Break it. Fix it. Ship it. 🚀
 
 ---
 
+## 💖 Support GnokeDatabase
+
+If you find GnokeDatabase useful, please consider supporting its development:
+
+https://selar.com/showlove/edmundsparrow
+
+Your support helps keep the project evolving, documented, and accessible for developers building offline-first systems on affordable infrastructure.
+
+---
+
 ## 👥 Get Started
 
 1. **Read:** `QUICKSTART.md` (5 min)
